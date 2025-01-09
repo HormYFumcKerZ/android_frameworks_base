@@ -241,7 +241,7 @@ constructor(
     }
 
     private fun addIconImageView() {
-        iconView.scaleType = ImageView.ScaleType.FIT_CENTER
+        iconView.scaleType = ImageView.ScaleType.CENTER_CROP
         iconView.setImageDrawable(animatedIconDrawable)
         addView(iconView)
         val lp = iconView.layoutParams as LayoutParams
