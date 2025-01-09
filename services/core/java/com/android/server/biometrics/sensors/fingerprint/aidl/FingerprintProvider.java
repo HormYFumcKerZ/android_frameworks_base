@@ -62,7 +62,6 @@ import com.android.server.biometrics.AuthenticationStatsBroadcastReceiver;
 import com.android.server.biometrics.AuthenticationStatsCollector;
 import com.android.server.biometrics.BiometricDanglingReceiver;
 import com.android.server.biometrics.BiometricHandlerProvider;
-import com.android.server.biometrics.Flags;
 import com.android.server.biometrics.Utils;
 import com.android.server.biometrics.log.BiometricContext;
 import com.android.server.biometrics.log.BiometricLogger;
@@ -134,8 +133,6 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
     @Nullable private IUdfpsOverlayController mUdfpsOverlayController;
     private final AuthSessionCoordinator mAuthSessionCoordinator;
     @Nullable private AuthenticationStatsCollector mAuthenticationStatsCollector;
-    @Nullable private IVirtualHal mVhal;
-    @Nullable private String mHalInstanceNameCurrent;
 
     private final class BiometricTaskStackListener extends TaskStackListener {
         @Override
@@ -302,29 +299,10 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
     @VisibleForTesting
     synchronized IFingerprint getHalInstance() {
         if (mTestHalEnabled) {
-            if (Flags.useVhalForTesting()) {
-                if (!mHalInstanceNameCurrent.contains("virtual")) {
-                    Slog.i(getTag(), "Switching fingerprint hal from " + mHalInstanceName
-                            + " to virtual hal");
-                    mHalInstanceNameCurrent = "virtual";
-                    mDaemon = null;
-                }
-            } else {
-                // Enabling the test HAL for a single sensor in a multi-sensor HAL currently enables
-                // the test HAL for all sensors under that HAL. This can be updated in the future if
-                // necessary.
-                return new TestHal();
-            }
-        } else {
-            if (mHalInstanceNameCurrent == null) {
-                mHalInstanceNameCurrent = mHalInstanceName;
-            } else if (mHalInstanceNameCurrent.contains("virtual")
-                    && mHalInstanceNameCurrent != mHalInstanceName) {
-                Slog.i(getTag(), "Switching fingerprint from virtual hal " + "to "
-                        + mHalInstanceName);
-                mHalInstanceNameCurrent = mHalInstanceName;
-                mDaemon = null;
-            }
+            // Enabling the test HAL for a single sensor in a multi-sensor HAL currently enables
+            // the test HAL for all sensors under that HAL. This can be updated in the future if
+            // necessary.
+            return new TestHal();
         }
 
         if (mDaemon != null) {
@@ -333,7 +311,10 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
 
         Slog.d(getTag(), "Daemon was null, reconnecting");
 
-        mDaemon = getIFingerprint(IFingerprint.DESCRIPTOR + "/" + mHalInstanceNameCurrent);
+        mDaemon = IFingerprint.Stub.asInterface(
+                Binder.allowBlocking(
+                        ServiceManager.waitForDeclaredService(
+                                IFingerprint.DESCRIPTOR + "/" + mHalInstanceName)));
         if (mDaemon == null) {
             Slog.e(getTag(), "Unable to get daemon");
             return null;
@@ -991,28 +972,5 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
      */
     public void sendFingerprintReEnrollNotification() {
         mAuthenticationStatsCollector.sendFingerprintReEnrollNotification();
-    }
-
-    /**
-     * Return virtual hal AIDL interface if it is used for testing
-     *
-     */
-    public IVirtualHal getVhal() throws RemoteException {
-        if (mVhal == null && useVhalForTesting()) {
-            mVhal = IVirtualHal.Stub.asInterface(
-                    Binder.allowBlocking(
-                            ServiceManager.waitForService(
-                                    IVirtualHal.DESCRIPTOR + "/"
-                                            + mHalInstanceNameCurrent)));
-            Slog.d(getTag(), "getVhal " + mHalInstanceNameCurrent);
-        }
-        return mVhal;
-    }
-
-    /**
-     * Return true if vhal_for_testing feature is enabled and test is active
-     */
-    public boolean useVhalForTesting() {
-        return (Flags.useVhalForTesting() && mTestHalEnabled);
     }
 }

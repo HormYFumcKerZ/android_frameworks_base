@@ -9,13 +9,6 @@ flag {
 }
 
 flag {
-  name: "use_vhal_for_testing"
-  namespace: "biometrics_framework"
-  description: "This flag controls whether virtual HAL is used for testing instead of TestHal "
-  bug: "294254230"
-}
-
-flag {
   name: "notify_fingerprints_loe"
   namespace: "biometrics_framework"
   description: "This flag controls whether a notification should be sent to notify user when loss of enrollment happens"
@@ -23,4 +16,11 @@ flag {
   metadata {
       purpose: PURPOSE_BUGFIX
   }
+}
+
+flag {
+    name: "de_hidl"
+    namespace: "biometrics_framework"
+    description: "feature flag for biometrics de-hidl"
+    bug: "287332354"
 }
