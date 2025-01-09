@@ -884,13 +884,7 @@ public class FingerprintProvider implements IBinder.DeathRecipient, ServiceProvi
     }
 
     void setTestHalEnabled(boolean enabled) {
-        final boolean changed = enabled != mTestHalEnabled;
         mTestHalEnabled = enabled;
-        Slog.i(getTag(), "setTestHalEnabled(): useVhalForTestingFlags=" + Flags.useVhalForTesting()
-                + " mTestHalEnabled=" + mTestHalEnabled + " changed=" + changed);
-        if (changed && useVhalForTesting()) {
-            getHalInstance();
-        }
     }
 
     public boolean getTestHalEnabled() {
