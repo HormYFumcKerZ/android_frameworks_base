@@ -78,7 +78,7 @@ public final class HidlFingerprintSensorConfig extends SensorProps {
                 R.bool.config_is_powerbutton_fps);
 
         if (isUdfps) {
-            sensorType = FingerprintSensorType.UNDER_DISPLAY_OPTICAL;
+            sensorType = FingerprintSensorType.UNKNOWN;
         } else if (isPowerbuttonFps) {
             sensorType = FingerprintSensorType.POWER_BUTTON;
         } else {
