@@ -114,11 +114,12 @@ class UdfpsView(
     fun configureDisplay(onDisplayConfigured: Runnable) {
         isDisplayConfigured = true
         animationViewController?.onDisplayConfiguring()
-        ghbmView?.let { view ->
-            view.setGhbmIlluminationListener(this::doIlluminate)
-            view.visibility = VISIBLE
-            view.startGhbmIllumination(onDisplayConfigured)
-        } ?: {
+        val gView = ghbmView
+        if (gView != null) {
+            gView.setGhbmIlluminationListener(this::doIlluminate)
+            gView.visibility = VISIBLE
+            gView.startGhbmIllumination(onDisplayConfigured)
+        } else {
             doIlluminate(null /* surface */, onDisplayConfigured)
         }
     }
