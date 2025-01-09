@@ -50,6 +50,7 @@ import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorLocationInternal;
 import android.hardware.biometrics.SensorPropertiesInternal;
 import android.hardware.biometrics.face.IFace;
+import android.hardware.biometrics.fingerprint.IFingerprint;
 import android.hardware.face.FaceSensorConfigurations;
 import android.hardware.face.FaceSensorProperties;
 import android.hardware.face.FaceSensorPropertiesInternal;
@@ -204,7 +205,7 @@ public class AuthService extends SystemService {
          */
         @VisibleForTesting
         public String[] getFingerprintAidlInstances() {
-            return FingerprintService.getDeclaredInstances();
+            return ServiceManager.getDeclaredInstances(IFingerprint.DESCRIPTOR);
         }
 
         /**
